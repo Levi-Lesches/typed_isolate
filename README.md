@@ -1,39 +1,26 @@
-<!-- 
-This README describes the package. If you publish this package to pub.dev,
-this README's contents appear on the landing page for your package.
+# typed_isolate
 
-For information about how to write a good package README, see the guide for
-[writing package pages](https://dart.dev/guides/libraries/writing-package-pages). 
-
-For general information about developing packages, see the Dart guide for
-[creating packages](https://dart.dev/guides/libraries/create-library-packages)
-and the Flutter guide for
-[developing packages and plugins](https://flutter.dev/developing-packages). 
--->
-
-TODO: Put a short description of the package here that helps potential users
-know whether this package might be useful for them.
+Easier and type-safe isolate usage with support for parent and child isolates and easy 2-way communication between them.
 
 ## Features
-
-TODO: List what your package can do. Maybe include images, gifs, or videos.
-
-## Getting started
-
-TODO: List prerequisites and provide or point to information on how to
-start using the package.
+- Declare a parent isolate that handles incoming data and can send messages to children isolates
+- Declare a child isolate or isolates to handle requests from and send data to the main isolate
+- Easily spawn children isolates from the parent isolate
+- Natural support for long-living isolates
+- Full type safety thanks to type arguments everywhere!
 
 ## Usage
 
-TODO: Include short and useful examples for package users. Add longer examples
-to `/example` folder. 
+Here's an example of a child isolate that receives integers and wraps them in square brackets. 
 
 ```dart
-const like = 'sample';
+class NumberConverter extends IsolateChild<String, int> {
+  NumberConverter() : super(id: "brackets");
+  
+  @override
+  void run() => print("Opening child...");
+
+  @override
+  void onData(int data) => send("[$data]");
+}
 ```
-
-## Additional information
-
-TODO: Tell users more about the package: where to find more information, how to 
-contribute to the package, how to file issues, what response they can expect 
-from the package authors, and more.
