@@ -1,4 +1,4 @@
-import 'package:burt_isolate/burt_isolate.dart';
+import 'package:typed_isolate/typed_isolate.dart';
 import 'package:test/test.dart';
 
 void main() {

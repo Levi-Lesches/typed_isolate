@@ -1,7 +1,7 @@
-name: burt_isolate
+name: typed_isolate
 description: A starting point for Dart libraries or applications.
 version: 1.0.0
-# repository: https://github.com/my_org/my_repo
+repository: https://github.com/Levi-Lesches/typed_isolate
 
 environment:
   sdk: ^3.1.2
