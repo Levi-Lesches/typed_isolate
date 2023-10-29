@@ -1,5 +1,5 @@
 name: typed_isolate
-description: A starting point for Dart libraries or applications.
+description: Easier and type-safe isolate usage with parent and child isolates
 version: 1.0.0
 repository: https://github.com/Levi-Lesches/typed_isolate
 
