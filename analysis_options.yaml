@@ -29,7 +29,6 @@ analyzer:
     - lib/generated/**.dart
     - lib/firebase_options.dart
     - test/**.dart
-    - example/**.dart
 
 linter:
   rules:

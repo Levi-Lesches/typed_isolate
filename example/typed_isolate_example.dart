@@ -1,4 +1,6 @@
-import 'package:burt_isolate/burt_isolate.dart';
+// ignore_for_file: avoid_print
+
+import "package:typed_isolate/typed_isolate.dart";
 
 class NumberSender extends IsolateParent<int, String> {
   @override
