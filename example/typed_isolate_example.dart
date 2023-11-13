@@ -28,7 +28,7 @@ class NumberSender extends IsolateParent<int, String> {
 
 class NumberConverter extends IsolateChild<String, int> {
   NumberConverter() : super(id: "brackets");
-  
+
   @override
   void run() => print("Opening child...");
 
