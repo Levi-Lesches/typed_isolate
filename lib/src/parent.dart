@@ -35,7 +35,8 @@ abstract class IsolateParent<S, R> {
       if (payload.port != null) {
         if (_sendPorts.containsKey(payload.id)) {
           throw StateError(
-              "Trying to register two child isolates with the same ID: ${payload.id}");
+            "Trying to register two child isolates with the same ID: ${payload.id}",
+          );
         }
         _sendPorts[payload.id] = payload.port!;
       }
@@ -65,5 +66,7 @@ abstract class IsolateParent<S, R> {
   /// Spawns the child and calls [IsolateChild.init] to establish two-way communication.
   Future<Isolate> spawn(IsolateChild<R, S> child) =>
       Isolate.spawn<TypedSendPort<IsolatePayload<R, S>>>(
-          child.init, _receiver.sendPort);
+        child.init,
+        _receiver.sendPort,
+      );
 }

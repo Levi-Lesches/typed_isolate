@@ -1,3 +1,7 @@
+## 2.0.1
+
+Minor formatting fixes
+
 ## 2.0.0
 
 Changed signature of `IsolateParent.onData` and `IsolateParent.send` to contain the `IsolateChild.id`
