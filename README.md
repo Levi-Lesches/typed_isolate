@@ -24,3 +24,5 @@ class NumberConverter extends IsolateChild<String, int> {
   void onData(int data) => send("[$data]");
 }
 ```
+
+For a full-fledged example, see the `Example` tab or `example/typed_isolate_example.dart`.

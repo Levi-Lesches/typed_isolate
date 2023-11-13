@@ -4,26 +4,26 @@ import "package:typed_isolate/typed_isolate.dart";
 
 class NumberSender extends IsolateParent<int, String> {
   @override
-  Future<void> run() async {
+  Future<void> init() async {
     print("Opening parent...");
     print("Sending: 1");
-    send(1, "braces");
-    send(1, "brackets");
+    send(data: 1, id: "braces");
+    send(data: 1, id: "brackets");
     await Future<void>.delayed(const Duration(seconds: 1));
 
     print("Sending: 2");
-    send(2, "brackets");
-    send(2, "braces");
+    send(data: 2, id: "brackets");
+    send(data: 2, id: "braces");
     await Future<void>.delayed(const Duration(seconds: 1));
 
     print("Sending: 3");
-    send(3, "braces");
-    send(3, "brackets");
+    send(data: 3, id: "braces");
+    send(data: 3, id: "brackets");
     await Future<void>.delayed(const Duration(seconds: 1));
   }
 
   @override
-  void onData(String str) => print("Got: $str");
+  void onData(String str, Object id) => print("Got: $str");
 }
 
 class NumberConverter extends IsolateChild<String, int> {
@@ -51,7 +51,7 @@ void main() async {
   final isolate1 = await parent.spawn(NumberConverter());
   final isolate2 = await parent.spawn(NumberConverter2());
   await Future<void>.delayed(const Duration(seconds: 1));
-  await parent.run();
+  await parent.init();
   isolate1.kill();
   isolate2.kill();
   parent.close();
