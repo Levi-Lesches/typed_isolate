@@ -1,6 +1,10 @@
+## 3.0.0
+
+- Renamed `IsolateParent.stop()` to `IsolateParent.stopListening()` and added `IsolateParent.killAll()`
+
 ## 2.0.1
 
-Minor formatting fixes
+- Minor formatting fixes
 
 ## 2.0.0
 
