@@ -5,6 +5,7 @@ import "package:typed_isolate/typed_isolate.dart";
 class NumberSender extends IsolateParent<int, String> {
   @override
   Future<void> init() async {
+    super.init();
     print("Opening parent...");
     print("Sending: 1");
     send(data: 1, id: "braces");

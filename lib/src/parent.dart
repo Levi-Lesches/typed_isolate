@@ -5,6 +5,8 @@ import "ports.dart";
 import "payload.dart";
 import "child.dart";
 
+import "package:meta/meta.dart";
+
 /// A parent isolate that can spawn children isolates.
 ///
 /// This class runs some initialization logic in [init], which may spawn some children isolates
@@ -35,6 +37,7 @@ abstract class IsolateParent<S, R> {
   IsolateParent();
 
   /// Starts running this isolate's "main" code. Usually used to spawn children.
+  @mustCallSuper
   void init() {
     _receiver = TypedReceivePort(ReceivePort());
     _subscription = _receiver!.listen((payload) {
@@ -62,6 +65,7 @@ abstract class IsolateParent<S, R> {
   void onData(R data, Object id);
 
   /// Kills all isolates and clears all handlers.
+  @mustCallSuper
   Future<void> dispose([int priority = Isolate.beforeNextEvent]) async {
     for (final isolate in isolates.values) {
       isolate.kill();
