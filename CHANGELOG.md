@@ -1,3 +1,8 @@
+## 4.0.0
+
+- **Breaking**: Merged `IsolateParent.stopListening()` and `IsolateParent.killAll()` into `IsolateParent.dispose()`
+- **New warning**: Annotated `IsolateParent.init()` with `@mustCallSuper`
+
 ## 3.0.0
 
 - Renamed `IsolateParent.stop()` to `IsolateParent.stopListening()` and added `IsolateParent.killAll()`
