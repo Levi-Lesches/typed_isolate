@@ -52,6 +52,5 @@ void main() async {
   await parent.spawn(NumberConverter2());
   await Future<void>.delayed(const Duration(seconds: 1));
   await parent.init();
-  parent.stopListening();
-  parent.killAll();
+  await parent.dispose();
 }

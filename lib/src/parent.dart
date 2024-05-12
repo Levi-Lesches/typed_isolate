@@ -14,7 +14,7 @@ import "child.dart";
 ///
 /// Two-way communication is implemented by calling [send] to send some data to the child with
 /// the given ID, and by overriding [onData] to be notified when a child sends some data back.
-/// Be sure to call [stopListening] when finished with this parent to stop listening to messages.
+/// Be sure to call [dispose] when finished with this parent to stop listening to messages.
 ///
 /// This class has two type arguments, [S] for the type being sent and [R] for the type being
 /// received. To keep the logic straightforward, this parent must send the same type [S] to all
@@ -25,15 +25,19 @@ import "child.dart";
 /// Note that [S] and [R] will be flipped with respect to this class's children: if you send
 /// integers and expect strings, then each child must expect integers and send strings.
 abstract class IsolateParent<S, R> {
-  late final _receiver = TypedReceivePort<IsolatePayload<R, S>>(ReceivePort());
-  late final StreamSubscription<IsolatePayload<R, S>> _subscription;
+  TypedReceivePort<IsolatePayload<R, S>>? _receiver;
+  StreamSubscription<IsolatePayload<R, S>>? _subscription;
   final Map<Object, TypedSendPort<S>> _sendPorts = {};
   /// All the isolates started by this parent. 
   final Map<Object, Isolate> isolates = {};
 
   /// Starts listening to [IsolatePayload]s sent by this isolate's children.
-  IsolateParent() {
-    _subscription = _receiver.listen((payload) {
+  IsolateParent();
+
+  /// Starts running this isolate's "main" code. Usually used to spawn children.
+  void init() {
+    _receiver = TypedReceivePort(ReceivePort());
+    _subscription = _receiver!.listen((payload) {
       if (payload.port != null) {
         if (_sendPorts.containsKey(payload.id)) {
           throw StateError(
@@ -44,10 +48,8 @@ abstract class IsolateParent<S, R> {
       }
       if (payload.data != null) onData(payload.data as R, payload.id);
     });
-  }
 
-  /// Starts running this isolate's "main" code. Usually used to spawn children.
-  void init();
+  }
 
   /// Sends the object to the child with the given ID.
   void send({required S data, required Object id}) {
@@ -59,23 +61,22 @@ abstract class IsolateParent<S, R> {
   /// A callback that runs when data is sent by a child.
   void onData(R data, Object id);
 
-  /// Stops listening to messages from this isolate's children.
-  void stopListening() {
-    _subscription.cancel();
-    _receiver.close();
-  }
-
-  /// Kills all child isolates using the given priority.
-  void killAll([int priority = Isolate.beforeNextEvent]) {
+  /// Kills all isolates and clears all handlers.
+  Future<void> dispose([int priority = Isolate.beforeNextEvent]) async {
     for (final isolate in isolates.values) {
       isolate.kill();
     }
+    await _subscription?.cancel();
+    _receiver?.close();
+    _sendPorts.clear();
+    isolates.clear();
   }
 
   /// Spawns the child and calls [IsolateChild.init] to establish two-way communication.
   Future<Isolate> spawn(IsolateChild<R, S> child) async {
+    if (_receiver == null) throw StateError("You must call IsolateParent.init() before calling spawn()");
     if (isolates.containsKey(child.id)) throw ArgumentError("An isolate with ID [${child.id}] already exists");
-    final isolate = await Isolate.spawn<TypedSendPort<IsolatePayload<R, S>>>(child.init, _receiver.sendPort);
+    final isolate = await Isolate.spawn<TypedSendPort<IsolatePayload<R, S>>>(child.init, _receiver!.sendPort);
     isolates[child.id] = isolate;
     return isolate;
   }
