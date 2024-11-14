@@ -5,7 +5,7 @@ import "package:typed_isolate/typed_isolate.dart";
 class NumberSender {
   final parent = IsolateParent<int, String>();
 
-  Future<void> init() async {
+  Future<void> run() async {
     parent.init();
     parent.stream.listen(onData);
     await parent.spawn(NumberConverter());
@@ -36,7 +36,7 @@ class NumberConverter extends IsolateChild<String, int> {
   NumberConverter() : super(id: "brackets");
 
   @override
-  void run() => print("Opening child...");
+  void run() => print("Opening child $id...");
 
   @override
   void onData(int data) => send("[$data]");
@@ -46,7 +46,7 @@ class NumberConverter2 extends IsolateChild<String, int> {
   NumberConverter2() : super(id: "braces");
 
   @override
-  void run() => print("Opening child...");
+  void run() => print("Opening child $id...");
 
   @override
   void onData(int data) => send("{$data}");
@@ -54,6 +54,6 @@ class NumberConverter2 extends IsolateChild<String, int> {
 
 void main() async {
   final parent = NumberSender();
-  await Future<void>.delayed(const Duration(seconds: 1));
-  await parent.init();
+  await parent.run();
+  parent.dispose();
 }

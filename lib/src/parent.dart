@@ -29,6 +29,8 @@ import "package:meta/meta.dart";
 class IsolateParent<S, R> {
   final _controller = StreamController<R>.broadcast();
   final Map<Object, TypedSendPort<S>> _sendPorts = {};
+  final Map<Object, Completer<void>> _completers = {};
+
   /// All the isolates started by this parent.
   final Map<Object, Isolate> isolates = {};
 
@@ -59,6 +61,7 @@ class IsolateParent<S, R> {
       throw StateError("Received a new child isolate with a duplicate ID: $id");
     }
     _sendPorts[id] = port;
+    _completers[id]?.complete();
   }
 
   /// Kills all isolates and clears all handlers.
@@ -95,8 +98,12 @@ class IsolateParent<S, R> {
   Future<Isolate> spawn(IsolateChild<R, S> child) async {
     if (_receiver == null) throw StateError("You must call IsolateParent.init() before calling spawn()");
     if (isolates.containsKey(child.id)) throw ArgumentError("An isolate with ID [${child.id}] already exists");
+
+    final completer = Completer<void>();
+    _completers[child.id] = completer;
     final isolate = await Isolate.spawn<TypedSendPort<ChildIsolatePayload<R, S>>>(child.init, _receiver!.sendPort);
     isolates[child.id] = isolate;
+    await completer.future;  // wait for the child to send a [ChildIsolateRegistration]
     return isolate;
   }
 }
