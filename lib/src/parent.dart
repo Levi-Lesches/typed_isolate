@@ -66,10 +66,13 @@ class IsolateParent<S, R> {
   @mustCallSuper
   void init() {
     _receiver = TypedReceivePort(ReceivePort());
-    _subscription = _receiver!.stream.listen((payload) => switch (payload) {
-      ChildIsolateRegistration(:final id, :final port) => _registerChild(id, port),
-      ChildIsolateData(:final data) => _controller.add(data),
-    },);
+    _subscription = _receiver!.stream.listen(
+      (payload) => switch (payload) {
+        ChildIsolateRegistration(:final id, :final port) =>
+          _registerChild(id, port),
+        ChildIsolateData(:final data) => _controller.add(data),
+      },
+    );
   }
 
   /// Kills all isolates and clears all handlers.
@@ -125,14 +128,23 @@ class IsolateParent<S, R> {
   /// Note that the type arguments [R] and [S] are flipped -- that is, if the parent sends data of
   /// of type [S], then the child must receive type [S], and vice versa.
   Future<Isolate> spawn(IsolateChild<R, S> child) async {
-    if (_receiver == null) throw StateError("You must call IsolateParent.init() before calling spawn()");
-    if (_isolates.containsKey(child.id)) throw ArgumentError("An isolate with ID [${child.id}] already exists");
+    if (_receiver == null) {
+      throw StateError(
+        "You must call IsolateParent.init() before calling spawn()",
+      );
+    } else if (_isolates.containsKey(child.id)) {
+      throw ArgumentError("An isolate with ID [${child.id}] already exists");
+    }
 
     final completer = Completer<void>();
     _completers[child.id] = completer;
-    final isolate = await Isolate.spawn<TypedSendPort<ChildIsolatePayload<R, S>>>(child.registerWithParent, _receiver!.sendPort);
+    final isolate = await Isolate.spawn(
+      child.registerWithParent,
+      _receiver!.sendPort,
+    );
     _isolates[child.id] = isolate;
-    await completer.future;  // wait for the child to send a [ChildIsolateRegistration]
+    // wait for the child to send a [ChildIsolateRegistration]
+    await completer.future;
     return isolate;
   }
 }

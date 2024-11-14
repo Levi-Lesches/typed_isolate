@@ -34,7 +34,7 @@ abstract class IsolateChild<S, R> {
   IsolateChild({required this.id});
 
   /// Runs when the child isolate is spawned, after [registerWithParent] is called.
-  void init() { }
+  void init() {}
 
   /// A callback to run when new data is received from the parent.
   void onData(R data);
@@ -55,7 +55,12 @@ abstract class IsolateChild<S, R> {
     _receiver = TypedReceivePort<R>(ReceivePort());
     _receiver.stream.listen(onData);
     _sender = port;
-    _sender.send(ChildIsolateRegistration<S, R>(id: id, port: _receiver.sendPort));
+    _sender.send(
+      ChildIsolateRegistration<S, R>(
+        id: id,
+        port: _receiver.sendPort,
+      ),
+    );
     init();
   }
 
