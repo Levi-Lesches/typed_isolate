@@ -30,13 +30,13 @@ abstract class IsolateParent<S, R> {
   TypedReceivePort<IsolatePayload<R, S>>? _receiver;
   StreamSubscription<IsolatePayload<R, S>>? _subscription;
   final Map<Object, TypedSendPort<S>> _sendPorts = {};
-  /// All the isolates started by this parent. 
+  /// All the isolates started by this parent.
   final Map<Object, Isolate> isolates = {};
 
-  /// Starts listening to [IsolatePayload]s sent by this isolate's children.
+  /// Creates an isolate that can spawn and manage other isolates.
   IsolateParent();
 
-  /// Starts running this isolate's "main" code. Usually used to spawn children.
+  /// Starts listening to potential children isolates.
   @mustCallSuper
   void init() {
     _receiver = TypedReceivePort(ReceivePort());
@@ -51,7 +51,18 @@ abstract class IsolateParent<S, R> {
       }
       if (payload.data != null) onData(payload.data as R, payload.id);
     });
+  }
 
+  /// Kills all isolates and clears all handlers.
+  @mustCallSuper
+  Future<void> dispose({int priority = Isolate.beforeNextEvent}) async {
+    for (final isolate in isolates.values) {
+      isolate.kill(priority: priority);
+    }
+    await _subscription?.cancel();
+    _receiver?.close();
+    _sendPorts.clear();
+    isolates.clear();
   }
 
   /// Sends the object to the child with the given ID.
@@ -63,18 +74,6 @@ abstract class IsolateParent<S, R> {
 
   /// A callback that runs when data is sent by a child.
   void onData(R data, Object id);
-
-  /// Kills all isolates and clears all handlers.
-  @mustCallSuper
-  Future<void> dispose([int priority = Isolate.beforeNextEvent]) async {
-    for (final isolate in isolates.values) {
-      isolate.kill();
-    }
-    await _subscription?.cancel();
-    _receiver?.close();
-    _sendPorts.clear();
-    isolates.clear();
-  }
 
   /// Spawns the child and calls [IsolateChild.init] to establish two-way communication.
   Future<Isolate> spawn(IsolateChild<R, S> child) async {
