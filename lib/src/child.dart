@@ -53,4 +53,7 @@ abstract class IsolateChild<S, R> {
     _sender.send(payload);
     run();
   }
+
+  /// A broadcast stream of all messages from the parent.
+  Stream<R> get stream => receiver.asBroadcastStream();
 }
