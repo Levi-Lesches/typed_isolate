@@ -50,7 +50,7 @@ class IsolateParent<S, R> {
   @mustCallSuper
   void init() {
     _receiver = TypedReceivePort(ReceivePort());
-    _subscription = _receiver!.listen((payload) => switch (payload) {
+    _subscription = _receiver!.stream.listen((payload) => switch (payload) {
       ChildIsolateRegistration(:final id, :final port) => _registerChild(id, port),
       ChildIsolateData(:final data) => _controller.add(data),
     },);

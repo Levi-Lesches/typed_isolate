@@ -47,13 +47,12 @@ abstract class IsolateChild<S, R> {
   /// Saves the given [TypedSendPort], and creates a [TypedReceivePort] to send to the parent.
   void init(TypedSendPort<ChildIsolatePayload<S, R>> port) {
     receiver = TypedReceivePort<R>(ReceivePort());
-    receiver.listen(onData);
+    receiver.stream.listen(onData);
     _sender = port;
-    final payload = ChildIsolateRegistration<S, R>(id: id, port: receiver.sendPort);
-    _sender.send(payload);
+    _sender.send(ChildIsolateRegistration<S, R>(id: id, port: receiver.sendPort));
     run();
   }
 
   /// A broadcast stream of all messages from the parent.
-  Stream<R> get stream => receiver;
+  Stream<R> get stream => receiver.stream;
 }
