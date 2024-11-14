@@ -65,6 +65,17 @@ abstract class IsolateParent<S, R> {
     isolates.clear();
   }
 
+  /// Returns whether there is an isolate with the given [IsolateChild.id].
+  bool hasChild(Object id) => isolates.containsKey(id);
+
+  /// Kills the child isolate with the given ID and priority and forgets its [SendPort].
+  ///
+  /// Use [hasChild] to test if there really is a child with this ID. If not, this is a no-op.
+  void killIsolate({required Object id, int priority = Isolate.beforeNextEvent}) {
+    isolates.remove(id)?.kill(priority: priority);
+    _sendPorts.remove(id);
+  }
+
   /// Sends the object to the child with the given ID.
   void send({required S data, required Object id}) {
     final port = _sendPorts[id];
