@@ -27,14 +27,22 @@ import "package:meta/meta.dart";
 /// Note that [S] and [R] will be flipped with respect to this class's children: if you send
 /// integers and expect strings, then each child must expect integers and send strings.
 abstract class IsolateParent<S, R> {
-  TypedReceivePort<IsolatePayload<R, S>>? _receiver;
-  StreamSubscription<IsolatePayload<R, S>>? _subscription;
+  final _controller = StreamController<R>.broadcast();
   final Map<Object, TypedSendPort<S>> _sendPorts = {};
   /// All the isolates started by this parent.
   final Map<Object, Isolate> isolates = {};
 
   /// Creates an isolate that can spawn and manage other isolates.
   IsolateParent();
+
+  TypedReceivePort<IsolatePayload<R, S>>? _receiver;
+  StreamSubscription<IsolatePayload<R, S>>? _subscription;
+
+  /// A stream of all incoming data from all children.
+  ///
+  /// This stream only includes the data the children send, not their IDs. If you need to identify
+  /// each child, include their [IsolateChild.id] in the response.
+  Stream<R> get stream => _controller.stream;
 
   /// Starts listening to potential children isolates.
   @mustCallSuper
@@ -49,7 +57,11 @@ abstract class IsolateParent<S, R> {
         }
         _sendPorts[payload.id] = payload.port!;
       }
-      if (payload.data != null) onData(payload.data as R, payload.id);
+      final data = payload.data;
+      if (data != null) {
+        _controller.add(data);
+        onData(data, payload.id);
+      }
     });
   }
 
