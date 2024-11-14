@@ -6,7 +6,7 @@ class NumberConverter extends IsolateChild<String, int> {
   NumberConverter() : super(id: "brackets");
 
   @override
-  Future<void> onSpawn() async => print("Opening child $id...");
+  Future<void> onSpawn() async {}
 
   @override
   void onData(int data) => sendToParent("[$data]");
@@ -18,7 +18,7 @@ class NumberConverter2 extends IsolateChild<String, int> {
   @override
   Future<void> onSpawn() async {
     // [onData] will not be called until this finishes
-    print("Opening child $id in 3 seconds");
+    sendToParent("Opening child $id in 3 seconds...");
     await Future<void>.delayed(const Duration(seconds: 3));
   }
 

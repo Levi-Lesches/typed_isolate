@@ -39,7 +39,7 @@ abstract class IsolateChild<S, R> {
   /// need to execute lots of code here, you should split it into two parts, the parts that need
   /// to run before any messages can be handled, and parts that can run after/while messages are
   /// being handled, then use `await` for the first parts and `unawaited` for the second.
-  Future<void> onSpawn() async { }
+  Future<void> onSpawn() async {}
 
   /// A callback to run when new data is received from the parent.
   void onData(R data);
@@ -56,7 +56,9 @@ abstract class IsolateChild<S, R> {
   /// need to run code when the isolate is spawned, prefer to override [onSpawn] instead. If you must
   /// override this, be sure to call `super.registerWithParent()` first.
   @mustCallSuper
-  Future<void> registerWithParent(TypedSendPort<ChildIsolatePayload<S, R>> port) async {
+  Future<void> registerWithParent(
+    TypedSendPort<ChildIsolatePayload<S, R>> port,
+  ) async {
     _receiver = TypedReceivePort<R>(ReceivePort());
     _sender = port;
     _sender.send(
