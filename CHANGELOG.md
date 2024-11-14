@@ -1,3 +1,17 @@
+## 5.0.0
+- Added `IsolateChild.stream`
+- Added `IsolateParent.stream`
+- Added `IsolateParent.hasChild()`
+- Added `IsolateParent.killChild()`
+- Updated docs, example, and README
+- Fixed bug where `IsolateParent.dispose()` was not using the given `priority` parameter.
+
+#### Breaking changes
+- `IsolateParent` is no longer meant to be subclassed. Simply create one and call `init` on it as usual.
+- `IsolateParent.send()` has been renamed to `sendToChild()`, and `IsolateChild.send()` has bene renamed to `sendToParent()`
+- Removed `IsolateParent.onData`. Subscribe to `IsolateParent.stream` instead
+- Removed `IsolateChild.init`. Override `IsolateChild.onSpawn` instead.
+
 ## 4.0.0
 
 - **Breaking**: Merged `IsolateParent.stopListening()` and `IsolateParent.killAll()` into `IsolateParent.dispose()`

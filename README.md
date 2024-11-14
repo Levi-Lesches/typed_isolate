@@ -11,18 +11,34 @@ Easier and type-safe isolate usage with support for parent and child isolates an
 
 ## Usage
 
-Here's an example of a child isolate that receives integers and wraps them in square brackets. 
+To start, create an `IsolateParent` and call `init()`. After calling `spawn()` to create a child, use `sendToChild` and subscribe to its `stream`:
 
 ```dart
-class NumberConverter extends IsolateChild<String, int> {
-  NumberConverter() : super(id: "brackets");
-  
-  @override
-  void run() => print("Opening child...");
-
-  @override
-  void onData(int data) => send("[$data]");
+void main() async {
+  // Sends ints, receives strings
+  final parent = IsolateParent<int, String>();
+  parent.init();
+  parent.stream.listen(print);
+  await parent.spawn(MyChildIsolate(id: "my-child-id"));
+  parent.sendToChild(id: "my-child-id", data: 1);
 }
 ```
 
-For a full-fledged example, see the `Example` tab or `example/typed_isolate_example.dart`.
+To create a child, subclass `IsolateChild` and provide an `id` and an `onData` handler for handling messages from the parent isolate. Use `sendToParent` to send data back to the parent. If you'd like to run code when the child spawns, override `onSpawn`.
+
+Here's an example of a child isolate that receives integers and wraps them in square brackets.
+
+```dart
+// Sends strings, receives ints
+class NumberConverter extends IsolateChild<String, int> {
+  NumberConverter() : super(id: "brackets");
+
+  @override
+  void onSpawn() => print("Opening child $id...");
+
+  @override
+  void onData(int data) => sendToParent("[$data]");
+}
+```
+
+For a fully integrated example, see the `Example` tab or `example/example.dart`.
