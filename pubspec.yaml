@@ -1,6 +1,6 @@
 name: typed_isolate
 description: Easier and type-safe isolate usage with parent and child isolates
-version: 5.0.0
+version: 6.0.0
 repository: https://github.com/Levi-Lesches/typed_isolate
 
 environment:
