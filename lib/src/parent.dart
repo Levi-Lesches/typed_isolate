@@ -35,8 +35,8 @@ abstract class IsolateParent<S, R> {
   /// Creates an isolate that can spawn and manage other isolates.
   IsolateParent();
 
-  TypedReceivePort<IsolatePayload<R, S>>? _receiver;
-  StreamSubscription<IsolatePayload<R, S>>? _subscription;
+  TypedReceivePort<ChildIsolatePayload<R, S>>? _receiver;
+  StreamSubscription<ChildIsolatePayload<R, S>>? _subscription;
 
   /// A stream of all incoming data from all children.
   ///
@@ -48,21 +48,22 @@ abstract class IsolateParent<S, R> {
   @mustCallSuper
   void init() {
     _receiver = TypedReceivePort(ReceivePort());
-    _subscription = _receiver!.listen((payload) {
-      if (payload.port != null) {
-        if (_sendPorts.containsKey(payload.id)) {
-          throw StateError(
-            "Trying to register two child isolates with the same ID: ${payload.id}",
-          );
-        }
-        _sendPorts[payload.id] = payload.port!;
-      }
-      final data = payload.data;
-      if (data != null) {
-        _controller.add(data);
-        onData(data, payload.id);
-      }
-    });
+    _subscription = _receiver!.listen((payload) => switch (payload) {
+      ChildIsolateRegistration(:final id, :final port) => _registerChild(id, port),
+      ChildIsolateData(:final id, :final data) => _handleData(id, data),
+    },);
+  }
+
+  void _registerChild(Object id, TypedSendPort<S> port) {
+    if (_sendPorts.containsKey(id)) {
+      throw StateError("Received a new child isolate with a duplicate ID: $id");
+    }
+    _sendPorts[id] = port;
+  }
+
+  void _handleData(Object id, R data) {
+    _controller.add(data);
+    onData(data, id);
   }
 
   /// Kills all isolates and clears all handlers.
@@ -102,7 +103,7 @@ abstract class IsolateParent<S, R> {
   Future<Isolate> spawn(IsolateChild<R, S> child) async {
     if (_receiver == null) throw StateError("You must call IsolateParent.init() before calling spawn()");
     if (isolates.containsKey(child.id)) throw ArgumentError("An isolate with ID [${child.id}] already exists");
-    final isolate = await Isolate.spawn<TypedSendPort<IsolatePayload<R, S>>>(child.init, _receiver!.sendPort);
+    final isolate = await Isolate.spawn<TypedSendPort<ChildIsolatePayload<R, S>>>(child.init, _receiver!.sendPort);
     isolates[child.id] = isolate;
     return isolate;
   }

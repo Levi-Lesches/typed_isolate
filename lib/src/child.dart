@@ -27,7 +27,7 @@ abstract class IsolateChild<S, R> {
   /// This port is also used by [init] to send [receiver]'s [TypedSendPort<R>] back to the parent
   /// to establish two-way communications. Because this port needs to send either another port
   /// or an actual message of type [S], it sends an [IsolatePayload<S, R>] to be safe.
-  late final TypedSendPort<IsolatePayload<S, R>> _sender;
+  late final TypedSendPort<ChildIsolatePayload<S, R>> _sender;
 
   /// Creates an isolate child with the given ID.
   IsolateChild({required this.id});
@@ -40,16 +40,16 @@ abstract class IsolateChild<S, R> {
 
   /// Sends data to the parent.
   void send(S obj) {
-    final payload = IsolatePayload<S, R>(id: id, data: obj);
+    final payload = ChildIsolateData<S, R>(id: id, data: obj);
     _sender.send(payload);
   }
 
   /// Saves the given [TypedSendPort], and creates a [TypedReceivePort] to send to the parent.
-  void init(TypedSendPort<IsolatePayload<S, R>> port) {
+  void init(TypedSendPort<ChildIsolatePayload<S, R>> port) {
     receiver = TypedReceivePort<R>(ReceivePort());
     receiver.listen(onData);
     _sender = port;
-    final payload = IsolatePayload<S, R>(id: id, port: receiver.sendPort);
+    final payload = ChildIsolateRegistration<S, R>(id: id, port: receiver.sendPort);
     _sender.send(payload);
     run();
   }
