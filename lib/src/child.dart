@@ -34,7 +34,12 @@ abstract class IsolateChild<S, R> {
   IsolateChild({required this.id});
 
   /// Runs when the child isolate is spawned, after [registerWithParent] is called.
-  void onSpawn() {}
+  ///
+  /// Note that `onData` will not be called until this function has finished executing. if you
+  /// need to execute lots of code here, you should split it into two parts, the parts that need
+  /// to run before any messages can be handled, and parts that can run after/while messages are
+  /// being handled, then use `await` for the first parts and `unawaited` for the second.
+  Future<void> onSpawn() async { }
 
   /// A callback to run when new data is received from the parent.
   void onData(R data);
@@ -51,9 +56,8 @@ abstract class IsolateChild<S, R> {
   /// need to run code when the isolate is spawned, prefer to override [onSpawn] instead. If you must
   /// override this, be sure to call `super.registerWithParent()` first.
   @mustCallSuper
-  void registerWithParent(TypedSendPort<ChildIsolatePayload<S, R>> port) {
+  Future<void> registerWithParent(TypedSendPort<ChildIsolatePayload<S, R>> port) async {
     _receiver = TypedReceivePort<R>(ReceivePort());
-    _receiver.stream.listen(onData);
     _sender = port;
     _sender.send(
       ChildIsolateRegistration<S, R>(
@@ -61,7 +65,8 @@ abstract class IsolateChild<S, R> {
         port: _receiver.sendPort,
       ),
     );
-    onSpawn();
+    await onSpawn();
+    _receiver.stream.listen(onData);
   }
 
   /// A broadcast stream of all messages from the parent.

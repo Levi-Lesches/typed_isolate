@@ -6,7 +6,7 @@ class NumberConverter extends IsolateChild<String, int> {
   NumberConverter() : super(id: "brackets");
 
   @override
-  void onSpawn() => print("Opening child $id...");
+  Future<void> onSpawn() async => print("Opening child $id...");
 
   @override
   void onData(int data) => sendToParent("[$data]");
@@ -16,7 +16,7 @@ class NumberConverter2 extends IsolateChild<String, int> {
   NumberConverter2() : super(id: "braces");
 
   @override
-  void onSpawn() => print("Opening child $id...");
+  Future<void> onSpawn() async => print("Opening child $id...");
 
   @override
   void onData(int data) => sendToParent("{$data}");
