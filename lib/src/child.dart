@@ -55,5 +55,5 @@ abstract class IsolateChild<S, R> {
   }
 
   /// A broadcast stream of all messages from the parent.
-  Stream<R> get stream => receiver.asBroadcastStream();
+  Stream<R> get stream => receiver;
 }

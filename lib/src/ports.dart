@@ -17,7 +17,7 @@ class TypedReceivePort<T> extends StreamView<T> {
   final ReceivePort _port;
 
   /// Wraps a native [ReceivePort] and casts it to [T].
-  TypedReceivePort(this._port) : super(_port.cast<T>());
+  TypedReceivePort(this._port) : super(_port.asBroadcastStream().cast<T>());
 
   /// Get the [TypedSendPort] for this [ReceivePort].
   TypedSendPort<T> get sendPort => TypedSendPort<T>(_port.sendPort);
