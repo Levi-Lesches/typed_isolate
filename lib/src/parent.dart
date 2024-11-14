@@ -9,14 +9,14 @@ import "package:meta/meta.dart";
 
 /// A parent isolate that can spawn children isolates.
 ///
-/// This class runs some initialization logic in [init], which may spawn some children isolates
-/// using [spawn]. Each child isolate should be a subclass of [IsolateChild], and must override
-/// its ID to be unique from every other child that this parent will spawn. It is an error for
-/// two [IsolateChild]s spawned by [spawn] to have the same ID, as it will confuse the parent.
+/// Call [init] first to prepare the parent, then use [spawn] to spawn your child isolates. Each
+/// child isolate should be a subclass of [IsolateChild], and must override [IsolateChild.id] to
+/// be unique from every other child that this parent will spawn. It is an error for two children
+/// spawned by [spawn] to have the same ID, as it will confuse the parent.
 ///
 /// Two-way communication is implemented by calling [send] to send some data to the child with
-/// the given ID, and by overriding [onData] to be notified when a child sends some data back.
-/// Be sure to call [dispose] when finished with this parent to stop listening to messages.
+/// the given ID, and incoming data can be read by listening to [stream]. Be sure to call [dispose]
+/// when finished with this parent to stop listening to messages and kill all isolates.
 ///
 /// This class has two type arguments, [S] for the type being sent and [R] for the type being
 /// received. To keep the logic straightforward, this parent must send the same type [S] to all
@@ -26,7 +26,7 @@ import "package:meta/meta.dart";
 ///
 /// Note that [S] and [R] will be flipped with respect to this class's children: if you send
 /// integers and expect strings, then each child must expect integers and send strings.
-abstract class IsolateParent<S, R> {
+class IsolateParent<S, R> {
   final _controller = StreamController<R>.broadcast();
   final Map<Object, TypedSendPort<S>> _sendPorts = {};
   /// All the isolates started by this parent.
@@ -50,7 +50,7 @@ abstract class IsolateParent<S, R> {
     _receiver = TypedReceivePort(ReceivePort());
     _subscription = _receiver!.listen((payload) => switch (payload) {
       ChildIsolateRegistration(:final id, :final port) => _registerChild(id, port),
-      ChildIsolateData(:final id, :final data) => _handleData(id, data),
+      ChildIsolateData(:final data) => _controller.add(data),
     },);
   }
 
@@ -59,11 +59,6 @@ abstract class IsolateParent<S, R> {
       throw StateError("Received a new child isolate with a duplicate ID: $id");
     }
     _sendPorts[id] = port;
-  }
-
-  void _handleData(Object id, R data) {
-    _controller.add(data);
-    onData(data, id);
   }
 
   /// Kills all isolates and clears all handlers.
@@ -95,9 +90,6 @@ abstract class IsolateParent<S, R> {
     if (port == null) throw ArgumentError("No child isolate found with id=$id");
     port.send(data);
   }
-
-  /// A callback that runs when data is sent by a child.
-  void onData(R data, Object id);
 
   /// Spawns the child and calls [IsolateChild.init] to establish two-way communication.
   Future<Isolate> spawn(IsolateChild<R, S> child) async {
