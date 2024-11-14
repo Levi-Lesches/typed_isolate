@@ -1,3 +1,6 @@
+## 6.0.0
+- **Breaking change**: Made `IsolateChild.onSpawn()` a `Future<void>`. Messages will not be handled and `onData` will not be called until after `onSpawn()` finishes. If you need to run a lot of code on spawn, split it into two parts where one must be run before handling new messages, and one that can be handled later, then use `await` for the first and `unawaited` for the second.
+
 ## 5.0.0
 - Added `IsolateChild.stream`
 - Added `IsolateParent.stream`
