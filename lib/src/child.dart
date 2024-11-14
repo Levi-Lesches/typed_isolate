@@ -9,7 +9,7 @@ import "ports.dart";
 ///
 /// A subclass of this should override [id] to uniquely identify itself among other children.
 ///
-/// - Optionally override [init] to run code when the child isolate is spawned
+/// - Optionally override [onSpawn] to run code when the child isolate is spawned
 /// - Override [onData] to handle data sent by the parent isolate
 /// - Use [sendToParent] to send data to the parent isolate
 ///
@@ -34,7 +34,7 @@ abstract class IsolateChild<S, R> {
   IsolateChild({required this.id});
 
   /// Runs when the child isolate is spawned, after [registerWithParent] is called.
-  void init() {}
+  void onSpawn() {}
 
   /// A callback to run when new data is received from the parent.
   void onData(R data);
@@ -48,7 +48,7 @@ abstract class IsolateChild<S, R> {
   /// Registers this child with its parent.
   ///
   /// This function is critical for establishing commmunication and should not be modified. If you
-  /// need to run code when the isolate is spawned, prefer to override [init] instead. If you must
+  /// need to run code when the isolate is spawned, prefer to override [onSpawn] instead. If you must
   /// override this, be sure to call `super.registerWithParent()` first.
   @mustCallSuper
   void registerWithParent(TypedSendPort<ChildIsolatePayload<S, R>> port) {
@@ -61,7 +61,7 @@ abstract class IsolateChild<S, R> {
         port: _receiver.sendPort,
       ),
     );
-    init();
+    onSpawn();
   }
 
   /// A broadcast stream of all messages from the parent.

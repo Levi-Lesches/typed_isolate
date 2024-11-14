@@ -121,7 +121,7 @@ class IsolateParent<S, R> {
   /// Spawns the given child and establishes two-way communication.
   ///
   /// This function instructs [Isolate.spawn] to call [IsolateChild.registerWithParent] which registers the child
-  /// with the parent. After that, the child calls [IsolateChild.init], which you may override if you
+  /// with the parent. After that, the child calls [IsolateChild.onSpawn], which you may override if you
   /// wish to run code on startup. Some use cases don't need this, however, and may defer work
   /// instead until the parent calls upon them.
   ///
